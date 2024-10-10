@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 
 import authenticationRoutes from "./routes/authentication.js";
 
+import { connectDB } from "./library/database.js";
+
 // Load environment variables
 dotenv.config();
 
@@ -14,4 +16,6 @@ application.use("/api/authentication", authenticationRoutes);
 // Define a route for the root of the application
 application.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+  // connect to the database
+  connectDB();
 });
