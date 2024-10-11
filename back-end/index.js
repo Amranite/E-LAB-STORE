@@ -11,7 +11,11 @@ dotenv.config();
 const application = express(); // Create an express application
 const PORT = process.env.PORT || 1000; // Default port is 1000
 
-application.use("/api/authentication", authenticationRoutes); // Use the authentication routes
+// Parse JSON bodies for this application
+application.use(express.json());
+
+// Define a route for the root of the application
+application.use("/api/authentication", authenticationRoutes);
 
 // Define a route for the root of the application
 application.listen(PORT, () => {
