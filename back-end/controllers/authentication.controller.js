@@ -65,5 +65,17 @@ export const signIn = async (req, res) => {
 }
 // Define a route for the sign-out of the application
 export const signOut = async (req, res) => {
-    res.send("Sign-out route");
+    try {
+        const refreshToken = req.cookies.refresh_token; // Get the refresh token from the request cookies
+        if (refreshToken) {
+            const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET); // Verify the refresh token
+            await redis.del(`redis_token:${decoded.userId}`); // Delete the refresh token from Redis
+        }
+        res.clearCookie("access_token"); // Clear the access token cookie
+        res.clearCookie("refresh_token"); // Clear the refresh token cookie
+        res.status(200).json({ message: "User signed out successfully" }); // Return a message if the user is signed out successfully
+    } catch (error) {
+        return res.status(500).json({ error: error.message }); // Return an error if there is an error signing out the user
+    }
+    // res.send("Sign-out route");
 }

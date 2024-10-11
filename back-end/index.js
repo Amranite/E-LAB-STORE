@@ -1,5 +1,6 @@
 import express from "express"; // Import express
 import dotenv from "dotenv"; // Import dotenv
+import cookieParser from "cookie-parser"; // Import cookie-parser middleware
 
 import authenticationRoutes from "./routes/authentication.route.js"; // Import the authentication routes
 
@@ -13,6 +14,9 @@ const PORT = process.env.PORT || 1000; // Default port is 1000
 
 // Parse JSON bodies for this application
 application.use(express.json());
+
+// Use the cookie parser middleware to parse cookies
+application.use(cookieParser());
 
 // Define a route for the root of the application
 application.use("/api/authentication", authenticationRoutes);
