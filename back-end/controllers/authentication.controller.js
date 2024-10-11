@@ -61,7 +61,30 @@ export const signUp = async (req, res) => {
 
 // Define a route for the sign-in of the application
 export const signIn = async (req, res) => {
-    res.send("Sign-in route");
+    try {
+        const { email, password } = req.body; // Destructure the email and password from the request body
+        const user = await User.findOne({ email }); // Find the user by email
+
+        if (user && (await user.comparePassword(password))) {
+            const { accessToken, refreshToken } = generateTokens(user._id); // Generate tokens for the user
+            await storeRefreshToken(user._id, refreshToken); // Store the refresh token in Redis
+            setCookies(res, accessToken, refreshToken); // Set the cookies in the response
+
+            res.status(200).json({
+                user: {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role
+                }, message: "User signed in successfully"
+            }); // Return the user and a message if the user is signed in successfully
+        } else {
+            return res.status(401).json({ error: "Invalid email or password" }); // Return an error if the email or password
+        }
+    } catch (error) {
+        return res.status(500).json({ error: error.message }); // Return an error if there is an error signing in the user
+    }
+    // res.send("Sign-in route");
 }
 // Define a route for the sign-out of the application
 export const signOut = async (req, res) => {
