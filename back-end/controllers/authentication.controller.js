@@ -86,6 +86,7 @@ export const signIn = async (req, res) => {
     }
     // res.send("Sign-in route");
 }
+
 // Define a route for the sign-out of the application
 export const signOut = async (req, res) => {
     try {
@@ -101,4 +102,34 @@ export const signOut = async (req, res) => {
         return res.status(500).json({ error: error.message }); // Return an error if there is an error signing out the user
     }
     // res.send("Sign-out route");
+}
+
+// Define a route for the refresh token of the application
+export const refreshToken = async (req, res) => { // Refresh the access token
+    try {
+        const refreshToken = req.cookies.refresh_token; // Get the refresh token from the request cookies
+
+        if (!refreshToken) {
+            return res.status(401).json({ error: "No refresh token provided" }); // Return an error if no refresh token is provided
+        }
+
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET); // Verify the refresh token
+        const storedRefreshToken = await redis.get(`redis_token:${decoded.userId}`); // Get the stored refresh token from Redis
+
+        if (storedRefreshToken !== refreshToken) {
+            return res.status(401).json({ error: "Invalid refresh token" }); // Return an error if the refresh token is invalid
+        }
+
+        const accessToken = jwt.sign({ userId: decoded.userId }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15m" }); // Generate a new access token
+        res.cookie("access_token", accessToken, {
+            httpOnly: true, // The cookie is only accessible by the server and not by the client side to prevent XSS (Cross-Site Scripting) attacks
+            sameSite: "strict", // The cookie is only sent in requests to the same site to prevent CSRF (Cross-Site Request Forgery) attacks
+            secure: process.env.NODE_ENV === "production", // The cookie is only sent over HTTPS in production
+            maxAge: 15 * 60 * 1000 // The cookie expires in 15 minutes
+        }); // Set the access token in the response
+
+        res.status(200).json({ message: "Access token refreshed successfully" }); // Return a message if the access token is refreshed successfully
+    } catch (error) {
+        return res.status(500).json({ error: error.message }); // Return an error if there is an error refreshing the access token
+    }
 }
