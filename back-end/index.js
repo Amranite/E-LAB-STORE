@@ -3,6 +3,7 @@ import dotenv from "dotenv"; // Import dotenv
 import cookieParser from "cookie-parser"; // Import cookie-parser middleware
 
 import authenticationRoutes from "./routes/authentication.route.js"; // Import the authentication routes
+import productRoutes from "./routes/product.route.js"; // Import the authentication routes
 
 import { connectDB } from "./library/database.js"; // Import the connectDB function
 
@@ -20,6 +21,7 @@ application.use(cookieParser());
 
 // Define a route for the root of the application
 application.use("/api/authentication", authenticationRoutes);
+application.use("/api/products", productRoutes);
 
 // Define a route for the root of the application
 application.listen(PORT, () => {
